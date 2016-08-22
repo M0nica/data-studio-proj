@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+/* remove stroke */
+
+/*
+.dot {
+  stroke: #000;
+}*/
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var color = d3.scale.category10();
+var colorScale = d3.scale.linear().domain([0,60000]).range(['beige', 'darkred']);
+
+var radiusScale = d3.scale.linear().domain([0,60000]).range(['beige', 'darkred']);
+
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("country-gdp-life-expectancy.csv", function(error, data) {
+  if (error) throw error;
+
+  data.forEach(function(d) {
+    d.GDP_per_capita = +d.GDP_per_capita;
+    d.life_expectancy = +d.life_expectancy;
+  });
+
+  x.domain(d3.extent(data, function(d) { return d.life_expectancy; })).nice();
+  y.domain(d3.extent(data, function(d) { return d.GDP_per_capita; })).nice();
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Life Expectancy (Years)");
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("GDP ($USD)")
+
+  svg.selectAll(".dot")
+      .data(data)
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", function(d) { return x(d.life_expectancy); })
+      .attr("cy", function(d) { return y(d.GDP_per_capita); })
+      .style("fill",function(d){
+        return colorScale(d.GDP_per_capita);
+      //   if(d.Continent === "Africa"){
+      //     return "#1b9e77"
+      //   }
+      //   if(d.Continent === "Asia"){
+      //       return "#7570b3"
+      //
+      //   }
+      //   if(d.Continent === "Europe"){
+      //       return "#e7298a"
+      //
+      //   }
+      //   if(d.Continent === "N. America"){
+      //       return "#d95f02"
+      //
+      //   }
+      //   if(d.Continent === "Oceania"){
+      //       return "#66a61e"
+      //
+      //   }
+      //   if(d.Continent === "S. America"){
+      //       return "#e6ab02"
+      //
+      //   }
+      //
+      // })
+});
+
+</script>
